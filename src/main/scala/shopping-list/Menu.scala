@@ -6,7 +6,7 @@ package ShoppingList
 
 import japgolly.scalajs.react.{BackendScope, Callback, ReactComponentB}
 import japgolly.scalajs.react.vdom.prefix_<^._
-import ShoppingList.SLApp.State
+import ShoppingList.App.State
 
 object Menu {
 
