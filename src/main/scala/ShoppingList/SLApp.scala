@@ -1,19 +1,34 @@
 package ShoppingList
 
+import japgolly.scalajs.react.{Callback,ReactDOM}
+
 import scala.scalajs.js.JSApp
 import org.scalajs.dom
 import dom.document
+import japgolly.scalajs.react.vdom.prefix_<^._
+import ShoppingList.Menu.MainMenu
+
+
 
 object SLApp extends JSApp {
 
-  def appendPar(targetNode: dom.Node, text: String): Unit = {
-    val parNode = document.createElement("p")
-    val textNode = document.createTextNode(text)
-    parNode.appendChild(textNode)
-    targetNode.appendChild(parNode)
-  }
-                                            
+  type State = Vector[(String, Callback)]
+
+  def onButtonPressed: Callback =
+    Callback.alert("The button was pressed!")
+
+  def Buttons(text: String) =
+    <.button(
+      ^.onClick --> onButtonPressed,
+      text)
+
+  def Document =
+    <.div (
+      MainMenu()
+    )
+
   def main(): Unit = {
-    appendPar(document.body, "Hello World its Shopping List on scalajs-react!")
+    ReactDOM.render(Document(), document.body)
   }
 }
+
