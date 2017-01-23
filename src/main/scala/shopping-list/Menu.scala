@@ -21,19 +21,17 @@ object Menu {
 
   def ButtonPress1: Callback =  Callback.alert("Список покупок")
   def ButtonPress2: Callback =  Callback.alert("Список магазинов")
-  def ButtonPress3: Callback =  Callback.alert("Список категорий покупок")
-  def ButtonPress4: Callback =  Callback.alert("Список категорий магазинов")
-  def ButtonPress5: Callback =  Callback.alert("Настройки")
+  def ButtonPress3: Callback =  Callback.alert("Справочники")
+  def ButtonPress4: Callback =  Callback.alert("Настройки")
 
 
   val MainMenu =
     ReactComponentB[Unit]("MainMenu")
       .initialState(Vector(
-        ("Список покупок",              ButtonPress1),
-        ("Список магазинов",            ButtonPress2),
-        ("Список категорий покупок",    ButtonPress3),
-        ("Список категорий магазинов",  ButtonPress4),
-        ("Настройки",                   ButtonPress5)
+        ("Покупки",     ButtonPress1),
+        ("Магазины",    ButtonPress2),
+        ("Справочники", ButtonPress3),
+        ("Настройки",   ButtonPress4)
       ))
       .renderBackend[Menu]
       .build
