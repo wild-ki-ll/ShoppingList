@@ -7,7 +7,7 @@ import japgolly.scalajs.react.Callback
   */
 
 // service class
-case class Menu(menuItems: List[(String, Callback)])
+case class Menu(menuItems: List[String])
 
 // items for modes
 case class Item(name: String, company: Int, unit: Int, quantity: Double, importance: Boolean)
@@ -22,4 +22,4 @@ case class References(menu: Menu, refsList: List[Ref])
 case class Settings(menu: Menu, settingList: List[SettingItem])
 
 // common State
-case class State(mainMenu: Menu, items: Items, shops: Shops, refs: References, settings: Settings)
+case class State(mainMenu: Menu, items: Items, shops: Shops, refs: References, settings: Settings, txt: String)
