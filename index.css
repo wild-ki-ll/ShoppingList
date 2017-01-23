@@ -1,0 +1,17 @@
+ label {
+ 	width: 8em;
+ 	float: left;
+ 	text-align: right;
+ 	margin: .25em 1em;
+ 	clear: both;
+ }
+
+ input, textarea, select {
+ 	margin: .25em 0;
+ 	width: 10em;
+ }
+
+ button {
+    margin: 0.5em;
+ }
+
