@@ -20,7 +20,7 @@ object App extends JSApp {
     )
 
   def main(): Unit = {
-    ReactDOM.render(Document(), document.body)
+    ReactDOM.render(Document(), document.getElementById("app"))
   }
 }
 
