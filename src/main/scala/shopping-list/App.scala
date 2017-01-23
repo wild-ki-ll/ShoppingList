@@ -6,9 +6,7 @@ import scala.scalajs.js.JSApp
 import org.scalajs.dom
 import dom.document
 import japgolly.scalajs.react.vdom.prefix_<^._
-import ShoppingList.Menu.MainMenu
-
-
+import MainMenu.createMainMenu
 
 object App extends JSApp {
 
@@ -16,7 +14,7 @@ object App extends JSApp {
 
   def Document =
     <.div (
-      MainMenu()
+      createMainMenu()
     )
 
   def main(): Unit = {

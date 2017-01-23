@@ -6,15 +6,14 @@ package ShoppingList
 
 import japgolly.scalajs.react.{BackendScope, Callback, ReactComponentB}
 import japgolly.scalajs.react.vdom.prefix_<^._
-import ShoppingList.App.State
 
-object Menu {
+object MainMenu {
 
-  class Menu($: BackendScope[Unit, State]) {
-    def render(s: State) =
+  class MainMenu($: BackendScope[Unit, Menu]) {
+    def render(s: Menu) =
       <.div(
         <.menu(
-          s.map(i => <.button(
+          s.menuItems.map(i => <.button(
             ^.onClick --> i._2,
             i._1))))
   }
@@ -24,15 +23,17 @@ object Menu {
   def ButtonPress3: Callback =  Callback.alert("Справочники")
   def ButtonPress4: Callback =  Callback.alert("Настройки")
 
-
-  val MainMenu =
+  val createMainMenu =
     ReactComponentB[Unit]("MainMenu")
-      .initialState(Vector(
-        ("Покупки",     ButtonPress1),
-        ("Магазины",    ButtonPress2),
-        ("Справочники", ButtonPress3),
-        ("Настройки",   ButtonPress4)
-      ))
-      .renderBackend[Menu]
+      .initialState(new Menu(List(
+        ("Список покупок", ButtonPress1),
+        ("Магазины",       ButtonPress2),
+        ("Справочники",    ButtonPress3),
+        ("Настройки",      ButtonPress4)
+      )))
+      .renderBackend[MainMenu]
       .build
 }
+
+
+
