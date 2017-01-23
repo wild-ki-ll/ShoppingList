@@ -10,17 +10,9 @@ import ShoppingList.Menu.MainMenu
 
 
 
-object SLApp extends JSApp {
+object App extends JSApp {
 
   type State = Vector[(String, Callback)]
-
-  def onButtonPressed: Callback =
-    Callback.alert("The button was pressed!")
-
-  def Buttons(text: String) =
-    <.button(
-      ^.onClick --> onButtonPressed,
-      text)
 
   def Document =
     <.div (

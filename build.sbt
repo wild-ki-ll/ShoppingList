@@ -1,9 +1,8 @@
 enablePlugins(ScalaJSPlugin)
-name := "Scala.js Tutorial"
+name := "Shopping list application"
 scalaVersion := "2.12.0" // or any other Scala version >= 2.10.2
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.1"
-libraryDependencies += "be.doeraene" %%% "scalajs-jquery" % "0.9.1"
 libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.4" % "test"
 libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "0.11.3"
 
