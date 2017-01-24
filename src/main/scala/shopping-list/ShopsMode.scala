@@ -4,34 +4,65 @@
 
 package ShoppingList
 
-import japgolly.scalajs.react.{BackendScope, ReactComponentB, Callback}
+import japgolly.scalajs.react.{BackendScope, ReactComponentB, ReactEventI}
 import japgolly.scalajs.react.vdom.prefix_<^._
 
 object ShopsMode {
-  class Backend($: BackendScope[Unit, List[Shop]]) {
 
-    def addShop   () = $.modState(s => s :+ Shop("1", 2, "3"))
-    def editShop  () = $.modState(s => s)
-    def deleteShop() = $.modState(s => s)
-    def filterShop() = $.modState(s => s)
+  case class StateShopMode(isList: Boolean = true, name: String = "", addr: String = "", list: List[Shop] = List[Shop]())
 
+  class Backend($: BackendScope[Unit, StateShopMode]) {
+
+    // change state
+    def showItemData()= $.modState(s => s.copy(isList = false))
+    def showList()    = $.modState(s => s.copy(isList = true))
+    def deleteShop()  = $.modState(s => s)
+    def filterShop()  = $.modState(s => s)
+    def addShop()     = $.modState(s => s.copy(isList = true, name="", addr="", list = s.list :+ Shop(s.name, 0, s.addr)))
+
+    def onChangeName(e: ReactEventI) = {
+      val newVal = e.target.value
+      $.modState(s => s.copy(name = newVal))
+    }
+
+    def onChangeAddress(e: ReactEventI) = {
+      val newVal = e.target.value
+      $.modState(s => s.copy(addr = newVal))
+    }
+
+    // create UI
     def createMenu =
       <.menu(
-        <.button("Добавить",      ^.onClick --> addShop()),
-        <.button("Редактировать", ^.onClick --> editShop()),
+        <.button("Добавить",      ^.onClick --> showItemData()),
+        <.button("Редактировать", ^.onClick --> showItemData()),
         <.button("Удалить",       ^.onClick --> deleteShop()),
         <.button("Фильтр",        ^.onClick --> filterShop())
       )
 
+    def createItem(sh: Shop) = {
+      <.div (
+        <.div (<.div ("Название"), <.input(^.`type` := "text", ^.value  := sh.name,    ^.onChange ==> onChangeName)),
+        <.div (<.div ("Категория"),<.input(^.`type` := "text", ^.value  := sh.category)),
+        <.div (<.div ("Адрес"),    <.input(^.`type` := "text", ^.value  := sh.address, ^.onChange ==> onChangeAddress)),
+        <.div (
+          <.button("Сохранить", ^.onClick --> addShop()),
+          <.button("Отмена",    ^.onClick --> showList())
+        )
+      )
+    }
+
     def createTable(s: List[Shop]) = {
       <.div(
         <.table(
+          <.caption("Спиок магазинов"),
+          <.thead(
+             <.tr(
+               <.td("Название"),
+               <.td("Категория"),
+               <.td("Адрес")
+             )
+          ),
           <.tbody(
-            <.tr(
-              <.td("Название"),
-              <.td("Категория"),
-              <.td("Адрес")
-            ),
             s.map(sh => {
               <.tr(
                 <.td (sh.name),
@@ -41,18 +72,20 @@ object ShopsMode {
             })
           )
         ),
-        <.div ("Всего в списке " + s.length.toString + " записей" )
+        <.div ("Всего строк в списке: " + s.length.toString)
       )
     }
-    def render(s: List[Shop]) =
-      <.div (
+
+    def render(s: StateShopMode) = {
+      <.div(
         createMenu(),
-        createTable(s)
+        if (s.isList) createTable(s.list) else createItem(Shop(s.name, 0, s.addr))
       )
+    }
   }
 
   val createMode = ReactComponentB[Unit]("ShopsMode")
-    .initialState(List[Shop]())
+    .initialState(StateShopMode())
     .renderBackend[Backend]
     .build
 
