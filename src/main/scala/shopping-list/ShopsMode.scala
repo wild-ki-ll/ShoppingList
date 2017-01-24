@@ -9,18 +9,45 @@ import japgolly.scalajs.react.vdom.prefix_<^._
 
 object ShopsMode {
   class Backend($: BackendScope[Unit, List[Shop]]) {
+
+    def addShop   () = $.modState(s => s :+ Shop("1", 2, "3"))
+    def editShop  () = $.modState(s => s)
+    def deleteShop() = $.modState(s => s)
+    def filterShop() = $.modState(s => s)
+
     def createMenu =
       <.menu(
-        <.button("Добавить", ^.onClick --> Callback.alert("Добавить в режиме магазинов")),
-        <.button("Редактировать"),
-        <.button("Удалить"),
-        <.button("Фильтр")
+        <.button("Добавить",      ^.onClick --> addShop()),
+        <.button("Редактировать", ^.onClick --> editShop()),
+        <.button("Удалить",       ^.onClick --> deleteShop()),
+        <.button("Фильтр",        ^.onClick --> filterShop())
       )
 
+    def createTable(s: List[Shop]) = {
+      <.div(
+        <.table(
+          <.tbody(
+            <.tr(
+              <.td("Название"),
+              <.td("Категория"),
+              <.td("Адрес")
+            ),
+            s.map(sh => {
+              <.tr(
+                <.td (sh.name),
+                <.td (sh.category),
+                <.td (sh.address)
+              )
+            })
+          )
+        ),
+        <.div ("Всего в списке " + s.length.toString + " записей" )
+      )
+    }
     def render(s: List[Shop]) =
       <.div (
         createMenu(),
-        <.div ("Режим магазинов")
+        createTable(s)
       )
   }
 
