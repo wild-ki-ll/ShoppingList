@@ -15,7 +15,8 @@ object ShopsMode {
   }
   import ModeType._
 
-  case class StateShopMode(modeType: ModeType = listMode, name: String = "", addr: String = "", list: List[Shop] = List[Shop]())
+  def emptyShop: Shop = Shop(0, "", 0, "")
+  case class StateShopMode(modeType: ModeType = listMode, curr: Shop = emptyShop, list: List[Shop] = List[Shop]())
 
   class Backend($: BackendScope[Unit, StateShopMode]) {
 
@@ -25,16 +26,17 @@ object ShopsMode {
     def showFilter()  = $.modState(s => s.copy(modeType = filterMode))
     def deleteShop()  = $.modState(s => s)
     def filterShop()  = $.modState(s => s)
-    def addShop()     = $.modState(s => s.copy(modeType = itemMode, name="", addr="", list = s.list :+ Shop(s.name, 0, s.addr)))
+
+    def addShop()     = $.modState(s => s.copy(modeType = listMode, curr = emptyShop, list = s.list :+ s.curr))
 
     def onChangeName(e: ReactEventI) = {
       val newVal = e.target.value
-      $.modState(s => s.copy(name = newVal))
+      $.modState(s => s.copy(curr = Shop(s.curr.id, newVal, s.curr.category, s.curr.address)))
     }
 
     def onChangeAddress(e: ReactEventI) = {
       val newVal = e.target.value
-      $.modState(s => s.copy(addr = newVal))
+      $.modState(s => s.copy(curr = Shop(s.curr.id, s.curr.name, s.curr.category, newVal)))
     }
 
     // create UI
@@ -87,7 +89,7 @@ object ShopsMode {
 
     def createDataMode(s: StateShopMode) =
       s.modeType match {
-        case ModeType.itemMode    => createItem(Shop(s.name, 0, s.addr))
+        case ModeType.itemMode    => createItem(s.curr)
         case ModeType.filterMode  => createFilter()
         case _                    => createTable(s.list)
       }

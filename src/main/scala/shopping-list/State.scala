@@ -7,7 +7,7 @@ package ShoppingList
 case class Mode (val id: Int = 0, val name: String = "")
 
 case class Item(name: String, company: Int, unit: Int, quantity: Double, importance: Boolean)
-case class Shop(name: String, category: Int, address: String)
+case class Shop(id: Int, name: String, category: Int, address: String)
 case class Ref(id: Int, name: String)
 case class SettingItem(name: String, value: String)
 
