@@ -4,81 +4,173 @@
 
 package ShoppingList
 
-import japgolly.scalajs.react.{BackendScope, Callback, ReactComponentB}
+import japgolly.scalajs.react.{BackendScope, Callback, ReactComponentB, ReactEventI}
 import japgolly.scalajs.react.vdom.prefix_<^.{<, ^, _}
 
 object ItemsMode {
 
+  // состояние режима "Покупки"
   case class ItemsModeState(
-    idSubmode: Int
+    showItemForm: Boolean = false,        // показывать форму товара
+    currentItem: Item     = Item(),       // текущий товар
+    list: List[Item]      = List[Item]()  // список товаров
   )
 
-  val customStyle = "customStyle".reactStyle
+  class Backend($: BackendScope[Unit, ItemsModeState]) {
 
-  class ItemBackend($: BackendScope[Unit, Item]) {
-    def render(i: Item) =
+    // Обработчики
+    def showItemForm = $.modState(_.copy(showItemForm = true))
+    def hideItemForm = $.modState(_.copy(showItemForm = false))
+    def addItem = $.modState(s => s.copy(showItemForm = false, list = s.list :+ s.currentItem, currentItem = Item()))
+
+    def onChangeName(e: ReactEventI) = {
+      val newVal = e.target.value
+      $.modState(s => s.copy(
+        currentItem = Item(newVal, s.currentItem.category, s.currentItem.subcategory,
+          s.currentItem.quantity, s.currentItem.unit, s.currentItem.importance,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+    def onChangeCategory(e: ReactEventI) = {
+      println(e.target)
+      val newVal = e.target.value.toInt
+      $.modState(s => s.copy(
+        currentItem = Item(s.currentItem.name, newVal, s.currentItem.subcategory,
+          s.currentItem.quantity, s.currentItem.unit, s.currentItem.importance,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+    def onChangeSubcategory(e: ReactEventI) = {
+      val newVal = e.target.value.toInt
+      $.modState(s => s.copy(
+        currentItem = Item(s.currentItem.name, s.currentItem.category, newVal,
+          s.currentItem.quantity, s.currentItem.unit, s.currentItem.importance,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+    def onChangeQuantity(e: ReactEventI) = {
+      val newVal = e.target.value.toDouble
+      $.modState(s => s.copy(
+        currentItem = Item(s.currentItem.name, s.currentItem.category, s.currentItem.subcategory,
+          newVal, s.currentItem.unit, s.currentItem.importance,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+    def onChangeUnit(e: ReactEventI) = {
+      val newVal = e.target.value.toInt
+      $.modState(s => s.copy(
+        currentItem = Item(s.currentItem.name, s.currentItem.category, s.currentItem.subcategory,
+          s.currentItem.quantity, newVal, s.currentItem.importance,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+
+    def onChangeImportance(e: ReactEventI) = {
+      val newVal = e.target.checked
+      $.modState(s => s.copy(
+        currentItem = Item(s.currentItem.name, s.currentItem.category, s.currentItem.subcategory,
+          s.currentItem.quantity, s.currentItem.unit, newVal,
+          s.currentItem.mark, s.currentItem.comment, s.currentItem.img, s.currentItem.shops
+        )))
+    }
+
+    def print = println($.toString)
+
+    // Форма товара
+    def createItemForm(i: Item) =
       <.div(
         <.div(
           <.label("Наименование"),
-          <.input(^.`type` := "text"),
+          <.input(^.`type` := "text", ^.value := i.name, ^.onChange ==> onChangeName),
           <.select(
-            <.option("Продукты питания"),
-            <.option("Бытовая химия"),
-            <.option("Канцелярия"),
-            <.option("Парфюмерия и косметика"),
-            <.option("Книги"),
-            <.option("Прочее")
+            <.option("Продукты питания", ^.value := "0"),
+            <.option("Бытовая химия", ^.value := "1"),
+            <.option("Канцелярия", ^.value := "2"),
+            <.option("Парфюмерия и косметика", ^.value := "3"),
+            <.option("Книги", ^.value := "4"),
+            <.option("Прочее", ^.value := "5"),
+            ^.selected := i.category,
+            ^.onChange ==> onChangeCategory
           ),
           <.select(
-            <.option("Молочные продукты"),
-            <.option("Крупы"),
-            <.option("Хлебо-булочные изделия"),
-            <.option("Мясо"),
-            <.option("Полуфабрикаты"),
-            <.option("Прочее")
+            <.option("Молочные продукты", ^.value := "0"),
+            <.option("Крупы", ^.value := "1"),
+            <.option("Хлебо-булочные изделия", ^.value := "2"),
+            <.option("Мясо", ^.value := "3"),
+            <.option("Полуфабрикаты", ^.value := "4"),
+            <.option("Прочее", ^.value := "5"),
+            ^.value := i.subcategory,
+            ^.onChange ==> onChangeSubcategory
           )
         ),
         <.div(
           <.label("Количество"),
-          <.input(^.`type` := "number"),
+          <.input(^.`type` := "number", ^.value := i.quantity, ^.onChange ==> onChangeQuantity),
           <.select(
-            <.option("шт"),
-            <.option("кг"),
-            <.option("л"),
-            <.option("г")
+            <.option("шт", ^.value := "0"),
+            <.option("кг", ^.value := "1"),
+            <.option("л",  ^.value := "2"),
+            <.option("г", ^.value := "3"),
+            ^.value := i.unit,
+            ^.onChange ==> onChangeUnit
           ),
-          <.label(^.float := "none", <.input.checkbox(), "Важное!")
-        )
+          <.label(^.float := "none", <.input.checkbox(^.checked := i.importance, ^.onChange ==> onChangeImportance), "Важное!")
+        ),
+        <.button("Сохранить", ^.onClick --> addItem)
       )
-  }
 
-  val сreateItemForm = ReactComponentB[Unit]("ItemSubmode")
-    .initialState(Item(name = "", company = 0, unit = 0, quantity = 0, importance = false))
-    .renderBackend[ItemBackend]
-    .build
+    // Список товаров
+    def createTable(s: List[Item]) = {
+      <.div(
+        if (s.length > 0)
+          <.table(
+            <.caption("Спиок товаров"),
+            <.thead(
+              <.tr(
+                <.td("Название"),
+                <.td("Категория"),
+                <.td("Подкатегория"),
+                <.td("Количество"),
+                <.td("Ед.изм"),
+                <.td("Важность")
+              )
+            ),
+            <.tbody(
+              s.map(item => {
+                <.tr(
+                  <.td(item.name),
+                  <.td(item.category),
+                  <.td(item.subcategory),
+                  <.td(item.quantity),
+                  <.td(item.unit),
+                  <.td(item.importance.toString)
+                )
+              })
+            )
+          )
+        else <.div(),
+          <.div ("Всего строк в списке: " + s.length.toString)
+        )
+    }
 
-  val createItemSubmode = <.div(сreateItemForm())
-
-  class Backend($: BackendScope[Unit, ItemsModeState]) {
-
-
+    // Меню
     def createMenu =
       <.menu(
-        <.button("Добавить",      ^.onClick --> $.modState(_.copy(idSubmode = 1))),
-        <.button("Редактировать", ^.onClick --> $.modState(_.copy(idSubmode = 1))),
-        <.button("Удалить",       ^.onClick --> $.modState(_.copy(idSubmode = 0))),
-        <.button("Фильтр",        ^.onClick --> $.modState(_.copy(idSubmode = 0)))
+        <.button("Добавить",      ^.onClick --> showItemForm),
+        <.button("Редактировать", ^.onClick --> showItemForm),
+        <.button("Удалить",       ^.onClick --> hideItemForm),
+        <.button("Фильтр",        ^.onClick --> hideItemForm)
       )
 
     def render(s: ItemsModeState) =
       <.div (
         createMenu(),
-        if (s.idSubmode == 1) createItemSubmode() else <.div ("Режим покупок")
+        if (s.showItemForm) createItemForm(s.currentItem) else createTable(s.list)
       )
   }
 
   val createMode = ReactComponentB[Unit]("ItemMode")
-    .initialState(ItemsModeState(idSubmode = 0))
+    .initialState(ItemsModeState())
     .renderBackend[Backend]
     .build
 
