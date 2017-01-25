@@ -16,14 +16,39 @@ object ShopsMode {
   import ModeType._
 
   def emptyShop: Shop = Shop(0, "", 0, "")
-  case class StateShopMode(modeType: ModeType = view, curr: Shop = emptyShop, list: List[Shop] = List[Shop]())
+  case class StateShopMode(
+    modeType: ModeType = view,
+    curr: Shop = emptyShop,
+    list: List[Shop] = List[Shop](),
+    checkedValues: List[Int] = List[Int]())
 
   class Backend($: BackendScope[Unit, StateShopMode]) {
 
     // change state
-    def add()   = $.modState(s => s.copy(modeType = ModeType.add))
-    def edit()  = $.modState(s => s.copy(modeType = ModeType.edit))
-    def cancel()= $.modState(s => s.copy(modeType = ModeType.view, curr = emptyShop))
+    def add()    = $.modState(s => s.copy(modeType = ModeType.add))
+    def edit()   = $.modState(s => s.copy(modeType = ModeType.edit))
+    def cancel() = $.modState(s => s.copy(modeType = ModeType.view, curr = emptyShop))
+    def onCheck(id: Int) =
+      $.modState(s => {
+        val newCheckedValues: List[Int] =
+          if (s.checkedValues.contains(id)) {
+            s.checkedValues.filter(v => v != id)
+          } else {
+            s.checkedValues :+ id
+          }
+        s.copy(checkedValues = newCheckedValues)
+      })
+    def onCheckAll() =
+      $.modState(s => {
+        val newCheckedValues: List[Int] =
+          if (s.list.length == s.checkedValues.length) {
+            List[Int]()
+          } else {
+            s.list.map(sh => sh.id)
+          }
+        s.copy(checkedValues = newCheckedValues)
+      })
+
 
     def save() = {
       $.modState(s => {
@@ -49,7 +74,7 @@ object ShopsMode {
     }
 
     // create UI
-    def table(s: List[Shop]) = {
+    def table(s: List[Shop], checkedValues: List[Int]) = {
       <.div(
         <.table(
           <.caption(
@@ -61,7 +86,7 @@ object ShopsMode {
           ),
           <.thead(
              <.tr(
-               <.td(<.input.checkbox()),
+               <.td(<.input.checkbox(^.onChange --> onCheckAll, ^.checked := checkedValues.length == s.length)),
                <.td("Название"),
                <.td("Категория"),
                <.td("Адрес")
@@ -70,7 +95,7 @@ object ShopsMode {
           <.tbody(
             s.map(sh => {
               <.tr(
-                <.td(<.input.checkbox()),
+                <.td(<.input.checkbox(^.onChange --> onCheck(sh.id), ^.checked := checkedValues.contains(sh.id))),
                 <.td (sh.name),
                 <.td (sh.category),
                 <.td (sh.address)
@@ -109,7 +134,7 @@ object ShopsMode {
     def render(s: StateShopMode) = {
       <.div(^.float := "left",
         details(s.curr),
-        table(s.list)
+        table(s.list, s.checkedValues)
       )
     }
   }
