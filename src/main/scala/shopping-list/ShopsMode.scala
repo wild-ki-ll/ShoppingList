@@ -28,6 +28,7 @@ object ShopsMode {
     def add()    = $.modState(s => s.copy(modeType = ModeType.add))
     def edit()   = $.modState(s => s.copy(modeType = ModeType.edit))
     def cancel() = $.modState(s => s.copy(modeType = ModeType.view, curr = emptyShop))
+
     def onCheck(id: Int) =
       $.modState(s => {
         val newCheckedValues: List[Int] =
@@ -38,6 +39,7 @@ object ShopsMode {
           }
         s.copy(checkedValues = newCheckedValues)
       })
+
     def onCheckAll() =
       $.modState(s => {
         val newCheckedValues: List[Int] =
@@ -62,10 +64,17 @@ object ShopsMode {
             val newId = if (s.list.length > 0) s.list.last.id + 1 else 1
             s.copy(modeType = view, curr = emptyShop, list = s.list :+ Shop(newId, s.curr.name, s.curr.category, s.curr.address))
           }
-          case ModeType.edit  => s.copy(modeType = view)
+          case ModeType.edit  => {
+            val newList = s.list.map(sh => if (sh.id == s.curr.id) s.curr else sh)
+            s.copy(modeType = view, list = newList)
+          }
           case _ => s.copy(modeType = view)
         }
       })
+    }
+
+    def setCurrentValue(id: Int) = {
+      $.modState(s => s.copy(curr = s.list.filter(sh=>sh.id == id)(0)))
     }
 
     def onChangeName(e: ReactEventI) = {
@@ -79,7 +88,7 @@ object ShopsMode {
     }
 
     // create UI
-    def table(s: List[Shop], checkedValues: List[Int]) = {
+    def table(s: List[Shop], checkedValues: List[Int], curr: Shop) = {
       <.div(
         <.table(
           <.caption(
@@ -99,7 +108,8 @@ object ShopsMode {
           ),
           <.tbody(
             s.map(sh => {
-              <.tr(
+              val backgroundColor: String = if (curr.id == sh.id) "silver" else "white"
+              <.tr(^.onClick --> setCurrentValue(sh.id), ^.backgroundColor := backgroundColor,
                 <.td(<.input.checkbox(^.onChange --> onCheck(sh.id), ^.checked := checkedValues.contains(sh.id))),
                 <.td (sh.name),
                 <.td (sh.category),
@@ -139,7 +149,7 @@ object ShopsMode {
     def render(s: StateShopMode) = {
       <.div(^.float := "left",
         details(s.curr),
-        table(s.list, s.checkedValues)
+        table(s.list, s.checkedValues, s.curr)
       )
     }
   }
