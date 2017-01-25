@@ -25,7 +25,7 @@ object ShopsMode {
   class Backend($: BackendScope[Unit, StateShopMode]) {
 
     // change state
-    def add()    = $.modState(s => s.copy(modeType = ModeType.add))
+    def add()    = $.modState(s => s.copy(modeType = ModeType.add, curr = emptyShop))
     def edit()   = $.modState(s => s.copy(modeType = ModeType.edit))
     def cancel() = $.modState(s => s.copy(modeType = ModeType.view, curr = emptyShop))
 
@@ -95,7 +95,7 @@ object ShopsMode {
             <.label("Спиок магазинов", ^.float := "left" ),
             <.div ( ^.float := "right",
               <.button("Ф"),
-              <.button("X", ^.onClick --> delete)
+              <.button("X", ^.onClick --> delete, ^.disabled := checkedValues.length == 0)
             )
           ),
           <.thead(
@@ -122,7 +122,7 @@ object ShopsMode {
       )
     }
 
-    def details(sh: Shop) = {
+    def details(sh: Shop, modeType: ModeType) = {
       <.div (
         <.div( ^.float := "left",
           <.div(<.label ("Название"), <.input (^.`type` := "text", ^.value  := sh.name, ^.onChange ==> onChangeName)),
@@ -135,12 +135,12 @@ object ShopsMode {
         ),
         <.div ( ^.float := "right",
           <.div (
-            <.button("+", ^.onClick --> add),
-            <.button("/", ^.onClick --> edit)
+            <.button("+", ^.onClick --> add,  ^.disabled := modeType!=ModeType.view),
+            <.button("/", ^.onClick --> edit, ^.disabled := modeType!=ModeType.view)
           ),
           <.div (
-            <.button("V", ^.onClick --> save),
-            <.button("X", ^.onClick --> cancel)
+            <.button("V", ^.onClick --> save,   ^.disabled := modeType==ModeType.view),
+            <.button("X", ^.onClick --> cancel, ^.disabled := modeType==ModeType.view)
           )
         )
       )
@@ -148,7 +148,7 @@ object ShopsMode {
 
     def render(s: StateShopMode) = {
       <.div(^.float := "left",
-        details(s.curr),
+        details(s.curr, s.modeType),
         table(s.list, s.checkedValues, s.curr)
       )
     }
