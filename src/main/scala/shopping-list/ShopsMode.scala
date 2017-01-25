@@ -53,7 +53,7 @@ object ShopsMode {
 
     def delete() = {
       $.modState(s => {
-        s.copy(list = s.list.filter(sh => !s.checkedValues.contains(sh.id)), checkedValues = List[Int]())
+        s.copy(list = s.list.filter(sh => !s.checkedValues.contains(sh.id)), checkedValues = List[Int](), curr = emptyShop)
       })
     }
 
