@@ -21,13 +21,15 @@ object ShopsMode {
   class Backend($: BackendScope[Unit, StateShopMode]) {
 
     // change state
-    def showItemData()= $.modState(s => s.copy(modeType = itemMode))
-    def showList()    = $.modState(s => s.copy(modeType = listMode))
-    def showFilter()  = $.modState(s => s.copy(modeType = filterMode))
-    def deleteShop()  = $.modState(s => s)
-    def filterShop()  = $.modState(s => s)
+    def showItemData()      = $.modState(s => s.copy(modeType = itemMode))
+    def showList()          = $.modState(s => s.copy(modeType = listMode))
+    def showFilter()        = $.modState(s => s.copy(modeType = filterMode))
+    def delShop(delId: Int) = $.modState(s => s.copy(list = s.list.filter(sh=> sh.id != delId)))
 
-    def addShop()     = $.modState(s => s.copy(modeType = listMode, curr = emptyShop, list = s.list :+ s.curr))
+    def addShop()     = $.modState(s => {
+      val newId = if (s.list.length > 0) s.list.last.id + 1 else 1
+      s.copy(modeType = listMode, curr = emptyShop, list = s.list :+ Shop(newId, s.curr.name, s.curr.category, s.curr.address))
+    })
 
     def onChangeName(e: ReactEventI) = {
       val newVal = e.target.value
@@ -44,7 +46,6 @@ object ShopsMode {
       <.menu(
         <.button("Добавить",      ^.onClick --> showItemData()),
         <.button("Редактировать", ^.onClick --> showItemData()),
-        <.button("Удалить",       ^.onClick --> deleteShop()),
         <.button("Фильтр",        ^.onClick --> showFilter())
       )
 
@@ -68,7 +69,8 @@ object ShopsMode {
              <.tr(
                <.td("Название"),
                <.td("Категория"),
-               <.td("Адрес")
+               <.td("Адрес"),
+               <.td("Действия")
              )
           ),
           <.tbody(
@@ -76,7 +78,10 @@ object ShopsMode {
               <.tr(
                 <.td (sh.name),
                 <.td (sh.category),
-                <.td (sh.address)
+                <.td (sh.address),
+                <.td (
+                  <.button ("X", ^.onClick --> delShop(sh.id))
+                )
               )
             })
           )
