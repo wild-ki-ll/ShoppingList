@@ -49,6 +49,11 @@ object ShopsMode {
         s.copy(checkedValues = newCheckedValues)
       })
 
+    def delete() = {
+      $.modState(s => {
+        s.copy(list = s.list.filter(sh => !s.checkedValues.contains(sh.id)), checkedValues = List[Int]())
+      })
+    }
 
     def save() = {
       $.modState(s => {
@@ -81,12 +86,12 @@ object ShopsMode {
             <.label("Спиок магазинов", ^.float := "left" ),
             <.div ( ^.float := "right",
               <.button("Ф"),
-              <.button("X")
+              <.button("X", ^.onClick --> delete)
             )
           ),
           <.thead(
              <.tr(
-               <.td(<.input.checkbox(^.onChange --> onCheckAll, ^.checked := checkedValues.length == s.length)),
+               <.td(<.input.checkbox(^.onChange --> onCheckAll, ^.checked := checkedValues.length == s.length && s.length>0)),
                <.td("Название"),
                <.td("Категория"),
                <.td("Адрес")
