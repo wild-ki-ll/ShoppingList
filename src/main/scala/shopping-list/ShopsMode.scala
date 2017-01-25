@@ -11,77 +11,69 @@ object ShopsMode {
 
   object ModeType extends Enumeration {
     type ModeType = Value
-    val listMode, itemMode, filterMode = Value
+    val add, edit, view = Value
   }
   import ModeType._
 
   def emptyShop: Shop = Shop(0, "", 0, "")
-  case class StateShopMode(modeType: ModeType = listMode, curr: Shop = emptyShop, list: List[Shop] = List[Shop]())
+  case class StateShopMode(modeType: ModeType = view, curr: Shop = emptyShop, list: List[Shop] = List[Shop]())
 
   class Backend($: BackendScope[Unit, StateShopMode]) {
 
     // change state
-    def showItemData()      = $.modState(s => s.copy(modeType = itemMode))
-    def showList()          = $.modState(s => s.copy(modeType = listMode))
-    def showFilter()        = $.modState(s => s.copy(modeType = filterMode))
-    def delShop(delId: Int) = $.modState(s => s.copy(list = s.list.filter(sh=> sh.id != delId)))
+    def add()   = $.modState(s => s.copy(modeType = ModeType.add))
+    def edit()  = $.modState(s => s.copy(modeType = ModeType.edit))
+    def cancel()= $.modState(s => s.copy(modeType = ModeType.view, curr = emptyShop))
 
-    def addShop()     = $.modState(s => {
-      val newId = if (s.list.length > 0) s.list.last.id + 1 else 1
-      s.copy(modeType = listMode, curr = emptyShop, list = s.list :+ Shop(newId, s.curr.name, s.curr.category, s.curr.address))
-    })
+    def save() = {
+      $.modState(s => {
+        s.modeType match {
+          case ModeType.add   => {
+            val newId = if (s.list.length > 0) s.list.last.id + 1 else 1
+            s.copy(modeType = view, curr = emptyShop, list = s.list :+ Shop(newId, s.curr.name, s.curr.category, s.curr.address))
+          }
+          case ModeType.edit  => s.copy(modeType = view)
+          case _ => s.copy(modeType = view)
+        }
+      })
+    }
 
     def onChangeName(e: ReactEventI) = {
       val newVal = e.target.value
-      $.modState(s => s.copy(curr = Shop(s.curr.id, newVal, s.curr.category, s.curr.address)))
+      $.modState(s => s.copy(curr = Shop(s.curr.id, if (s.modeType == view) s.curr.name else newVal, s.curr.category, s.curr.address)))
     }
 
     def onChangeAddress(e: ReactEventI) = {
       val newVal = e.target.value
-      $.modState(s => s.copy(curr = Shop(s.curr.id, s.curr.name, s.curr.category, newVal)))
+      $.modState(s => s.copy(curr = Shop(s.curr.id, s.curr.name, s.curr.category, if (s.modeType == view) s.curr.address else newVal)))
     }
 
     // create UI
-    def createMenu =
-      <.menu(
-        <.button("Добавить",      ^.onClick --> showItemData()),
-        <.button("Редактировать", ^.onClick --> showItemData()),
-        <.button("Фильтр",        ^.onClick --> showFilter())
-      )
-
-    def createItem(sh: Shop) = {
-      <.div (
-        <.div (<.div ("Название"), <.input(^.`type` := "text", ^.value  := sh.name,    ^.onChange ==> onChangeName)),
-        <.div (<.div ("Категория"),<.input(^.`type` := "text", ^.value  := sh.category)),
-        <.div (<.div ("Адрес"),    <.input(^.`type` := "text", ^.value  := sh.address, ^.onChange ==> onChangeAddress)),
-        <.div (
-          <.button("Сохранить", ^.onClick --> addShop()),
-          <.button("Отмена",    ^.onClick --> showList())
-        )
-      )
-    }
-
-    def createTable(s: List[Shop]) = {
+    def table(s: List[Shop]) = {
       <.div(
         <.table(
-          <.caption("Спиок магазинов"),
+          <.caption(
+            <.label("Спиок магазинов", ^.float := "left" ),
+            <.div ( ^.float := "right",
+              <.button("Ф"),
+              <.button("X")
+            )
+          ),
           <.thead(
              <.tr(
+               <.td(<.input.checkbox()),
                <.td("Название"),
                <.td("Категория"),
-               <.td("Адрес"),
-               <.td("Действия")
+               <.td("Адрес")
              )
           ),
           <.tbody(
             s.map(sh => {
               <.tr(
+                <.td(<.input.checkbox()),
                 <.td (sh.name),
                 <.td (sh.category),
-                <.td (sh.address),
-                <.td (
-                  <.button ("X", ^.onClick --> delShop(sh.id))
-                )
+                <.td (sh.address)
               )
             })
           )
@@ -90,19 +82,34 @@ object ShopsMode {
       )
     }
 
-    def createFilter = {<.div("Тут будет фильтр")}
-
-    def createDataMode(s: StateShopMode) =
-      s.modeType match {
-        case ModeType.itemMode    => createItem(s.curr)
-        case ModeType.filterMode  => createFilter()
-        case _                    => createTable(s.list)
-      }
+    def details(sh: Shop) = {
+      <.div (
+        <.div( ^.float := "left",
+          <.div(<.label ("Название"), <.input (^.`type` := "text", ^.value  := sh.name, ^.onChange ==> onChangeName)),
+          <.div(<.label ("Категория"),<.select(
+            <.option("Продуктовый"),
+            <.option("Продовольственный"),
+            <.option("Прочее"),
+            ^.value  := sh.category)),
+          <.div (<.label ("Адрес"),   <.input (^.`type` := "text", ^.value  := sh.address, ^.onChange ==> onChangeAddress))
+        ),
+        <.div ( ^.float := "right",
+          <.div (
+            <.button("+", ^.onClick --> add),
+            <.button("/", ^.onClick --> edit)
+          ),
+          <.div (
+            <.button("V", ^.onClick --> save),
+            <.button("X", ^.onClick --> cancel)
+          )
+        )
+      )
+    }
 
     def render(s: StateShopMode) = {
-      <.div(
-        createMenu(),
-        createDataMode(s)
+      <.div(^.float := "left",
+        details(s.curr),
+        table(s.list)
       )
     }
   }
