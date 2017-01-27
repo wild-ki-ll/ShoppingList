@@ -4,6 +4,11 @@
 package ShoppingList
 import ShoppingList.ShopsMode.Shop
 
+object ModeType extends Enumeration {
+  type ModeType = Value
+  val add, edit, view = Value
+}
+
 // items for modes
 case class Mode (val id: Int = 0, val name: String = "")
 

@@ -7,10 +7,6 @@ package ShoppingList
 import japgolly.scalajs.react.{BackendScope}
 import japgolly.scalajs.react.vdom.prefix_<^._
 
-object ModeType extends Enumeration {
-  type ModeType = Value
-  val add, edit, view = Value
-}
 import ModeType._
 
 object ListMode {
