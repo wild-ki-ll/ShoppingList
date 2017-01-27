@@ -3,7 +3,7 @@
   */
 package ShoppingList
 
-import japgolly.scalajs.react.{BackendScope, ReactComponentB}
+import japgolly.scalajs.react.{BackendScope, ReactComponentB, ReactEventI}
 import japgolly.scalajs.react.vdom.prefix_<^._
 import ModeType._
 import ShoppingList.ItemsMode.ItemsModeState
@@ -19,16 +19,30 @@ object NewItemsMode {
   )
 
   class Backend($: BackendScope[Unit, NewItemModeState]) {
+
+    def nameChanged(e: ReactEventI) = {
+      val newVal = e.target.value
+      $.modState(s => s.copy(
+        currItem = NewItem(s.currItem.id, newVal, s.currItem.category),
+        itemsCurr = s.itemsAll.diff(s.itemsInList).filter(_.name.toLowerCase().startsWith(newVal)))
+      )
+    }
+
     def render(s: NewItemModeState) =
       <.div (
         <.div(
           <.label("Наименование:", ^.float:="none"),
-          <.input.text()
+          <.input.text(^.onKeyUp ==> nameChanged)
         ),
         <.div(
-          <.ul(
-            s.itemsCurr.map(item => <.li(item.name))
-          )
+          if (s.itemsCurr.length == 0) <.div(^.float:="left", "Продукт не найден")
+          else <.ul(^.float:="left", s.itemsCurr.sortWith(_.name <= _.name).map(item => <.li(item.name))),
+          <.div(<.button(">>", ^.float:="left", ^.onClick --> $.modState(s => s.copy(
+            currItem = NewItem(0, "", ""),
+            itemsCurr = List[NewItem](),
+            itemsInList = s.itemsInList ++ s.itemsCurr)))),
+          if (s.itemsInList.length == 0) <.div(^.float:="left", "В списке ни одного продукта")
+          else <.ul(^.float:="left", s.itemsInList.sortWith(_.name <= _.name).map(item => <.li(item.name)))
         )
       )
   }
@@ -43,8 +57,20 @@ object NewItemsMode {
     NewItem(6, "семь", ""),
     NewItem(7, "восемь", "")
   )
+
+  val itemsInList = List(
+    NewItem(0, "один-один", ""),
+    NewItem(1, "два-один", ""),
+    NewItem(2, "три-один", ""),
+    NewItem(3, "четыре-один", ""),
+    NewItem(4, "пять-один", ""),
+    NewItem(5, "шесть-один", ""),
+    NewItem(6, "семь-один", ""),
+    NewItem(7, "восемь-один", "")
+  )
   val createMode = ReactComponentB[Unit]("NewItemMode")
-    .initialState(NewItemModeState(NewItem(0, "", ""), items, List[NewItem](), List[NewItem]()))
+    .initialState(
+      NewItemModeState(NewItem(0, "", ""), /*TODO: remove dummies*/ items++itemsInList, List[NewItem](), items++itemsInList))
     .renderBackend[Backend]
     .build
 
