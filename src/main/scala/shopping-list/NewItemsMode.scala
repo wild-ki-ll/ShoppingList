@@ -35,13 +35,22 @@ object NewItemsMode {
           <.input.text(^.onKeyUp ==> nameChanged)
         ),
         <.div(
-          if (s.itemsCurr.length == 0) <.div(^.float:="left", "Продукт не найден")
+          if (s.itemsCurr.length == 0) <.div(^.float:="left", ^.padding:="1em", ^.width:="10em", "Продукт не найден")
           else <.ul(^.float:="left", s.itemsCurr.sortWith(_.name <= _.name).map(item => <.li(item.name))),
-          <.div(<.button(">>", ^.float:="left", ^.onClick --> $.modState(s => s.copy(
-            currItem = NewItem(0, "", ""),
-            itemsCurr = List[NewItem](),
-            itemsInList = s.itemsInList ++ s.itemsCurr)))),
-          if (s.itemsInList.length == 0) <.div(^.float:="left", "В списке ни одного продукта")
+          <.div(^.float:="left", ^.paddingTop:="0.5em",
+            <.button(">>", ^.display:="block", ^.onClick --> $.modState(s => s.copy(
+              currItem = NewItem(0, "", ""),
+              itemsCurr = List[NewItem](),
+              itemsInList = s.itemsInList ++ s.itemsCurr))),
+            <.button("<<", ^.display:="block", ^.onClick --> $.modState(s => s.copy(
+              currItem = NewItem(0, "", ""),
+              itemsCurr =
+                if (s.currItem.name.isEmpty) s.itemsAll
+                else s.itemsAll.diff(s.itemsInList).filter(_.name.toLowerCase().startsWith(s.currItem.name))
+                ,
+              itemsInList = List[NewItem]())))
+          ),
+          if (s.itemsInList.length == 0) <.div(^.float:="left", ^.padding:="1em", "В списке ни одного продукта")
           else <.ul(^.float:="left", s.itemsInList.sortWith(_.name <= _.name).map(item => <.li(item.name)))
         )
       )

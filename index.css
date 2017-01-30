@@ -21,5 +21,9 @@ table, th, td {
     border: 1px solid black;
 }
 
+ul {
+    width: 10em;
+}
+
 
 
