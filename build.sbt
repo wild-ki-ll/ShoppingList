@@ -1,10 +1,16 @@
 enablePlugins(ScalaJSPlugin)
+
 name := "Shopping list application"
-scalaVersion := "2.12.0" // or any other Scala version >= 2.10.2
+
+scalaVersion := "2.11.0" // or any other Scala version >= 2.10.2
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.1"
+
 libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.4" % "test"
+
 libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "0.11.3"
+
+libraryDependencies += "com.github.eldis" %%% "scalajs-redux" % "0.2.0-SNAPSHOT"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 
